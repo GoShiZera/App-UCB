@@ -1,0 +1,855 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tracker UCB</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background-color: #f8f9fa;
+            color: #1f2937;
+            min-height: 100vh;
+            padding-bottom: 80px;
+            overflow-x: hidden;
+        }
+        
+        /* Sidebar Styles */
+        .sidebar {
+            position: fixed;
+            top: 0;
+            left: -300px;
+            width: 100px;
+            height: 100vh;
+            background: white;
+            box-shadow: 4px 0 12px rgba(0,0,0,0.15);
+            z-index: 1000;
+            transition: left 0.3s ease;
+            padding-top: 15px;
+        }
+        
+        .sidebar.open {
+            left: 0;
+        }
+        
+        .sidebar-header {
+            padding: 20px;
+            border-bottom: 1px solid #e5e7eb;
+            display: flex;
+            justify-content: flex-end;
+        }
+        
+        .close-sidebar {
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: #6b7280;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background-color 0.2s;
+        }
+        
+        .close-sidebar:hover {
+            background-color: #f3f4f6;
+        }
+        
+        .account-section {
+            padding: 20px;
+            text-align: center;
+            border-bottom: 1px solid #e5e7eb;
+        }
+        
+        .account-icon {
+            width: 45px;
+            height: 45px;
+            background: linear-gradient(135deg, #6d1f1f, #f93816);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 12px;
+            color: white;
+            font-size: 24px;
+        }
+        
+        .account-text {
+            font-weight: 600;
+            color: #111827;
+            font-size: 1rem;
+        }
+        
+        /* Overlay for sidebar */
+        .overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.5);
+            z-index: 999;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s, visibility 0.3s;
+        }
+        
+        .overlay.show {
+            opacity: 1;
+            visibility: visible;
+        }
+        
+        /* Header Styles */
+        .header {
+            background: white;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 16px;
+        }
+        
+        .menu-button {
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: #111827;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background-color 0.2s;
+        }
+        
+        .menu-button:hover {
+            background-color: #f3f4f6;
+        }
+        
+        .header-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #111827;
+            text-align: center;
+            flex: 1;
+            margin: 0 40px;
+        }
+        
+        .red-line {
+            height: 4px;
+            background-color: #ef4444;
+            border-radius: 2px;
+            width: 100px;
+            margin: 8px auto 0;
+        }
+        
+        .container {
+            max-width: 500px;
+            margin: 0 auto;
+            padding: 24px 16px;
+            margin-top: 20px;
+        }
+        
+        .section-card {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            border: 1px solid #e5e7eb;
+            overflow: hidden;
+            margin-bottom: 24px;
+        }
+        
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 16px;
+            border-bottom: 1px solid #e5e7eb;
+        }
+        
+        .section-title {
+            font-size: 1.125rem;
+            font-weight: 600;
+            color: #111827;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .section-title i {
+            color: #ef4444;
+        }
+        
+        .plus-button {
+            width: 40px;
+            height: 40px;
+            background-color: #ef4444;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 20px;
+            transition: background-color 0.2s;
+        }
+        
+        .plus-button:hover {
+            background-color: #dc2626;
+        }
+        
+        .activities-content {
+            padding: 8px;
+        }
+        
+        .activity-card {
+            background: #f9fafb;
+            border-radius: 12px;
+            margin-bottom: 12px;
+            overflow: hidden;
+            border: 1px solid #e5e7eb;
+        }
+        
+        .activity-header {
+            padding: 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        
+        .activity-header:hover {
+            background-color: #f3f4f6;
+        }
+        
+        .activity-name {
+            font-weight: 600;
+            color: #111827;
+            flex: 1;
+            text-align: left;
+        }
+        
+        .activity-class {
+            font-size: 0.875rem;
+            color: #6b7280;
+            margin-top: 4px;
+            text-align: left;
+        }
+        
+        .days-info {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            min-width: 80px;
+        }
+        
+        .days-text {
+            font-size: 0.75rem;
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+        
+        .days-overdue { color: #ef4444; }
+        .days-today { color: #eab308; }
+        .days-upcoming { color: #10b981; }
+        
+        .chevron {
+            margin-left: 8px;
+            transition: transform 0.2s;
+        }
+        
+        .expanded .chevron {
+            transform: rotate(180deg);
+        }
+        
+        .activity-details {
+            padding: 16px;
+            background: white;
+            border-top: 1px solid #e5e7eb;
+            display: none;
+        }
+        
+        .detail-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 8px;
+            margin-bottom: 12px;
+            font-size: 0.875rem;
+            color: #4b5563;
+        }
+        
+        .detail-item i {
+            flex-shrink: 0;
+            margin-top: 2px;
+        }
+        
+        .finish-button {
+            width: 100%;
+            padding: 12px;
+            background-color: #10b981;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            transition: background-color 0.2s;
+        }
+        
+        .finish-button:hover {
+            background-color: #059669;
+        }
+        
+        .schedule-day {
+            background: white;
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 16px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            border: 1px solid #e5e7eb;
+        }
+        
+        .day-title {
+            font-weight: 600;
+            color: #111827;
+            margin-bottom: 12px;
+            font-size: 1rem;
+        }
+        
+        .schedule-item {
+            display: flex;
+            gap: 12px;
+            padding: 12px;
+            background: #eff6ff;
+            border-radius: 8px;
+            margin-bottom: 8px;
+        }
+        
+        .schedule-item:last-child {
+            margin-bottom: 0;
+        }
+        
+        .time-icon {
+            width: 32px;
+            height: 32px;
+            background: #dbeafe;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+        
+        .time-icon i {
+            color: #3b82f6;
+            font-size: 14px;
+        }
+        
+        .class-info {
+            flex: 1;
+            min-width: 0;
+        }
+        
+        .class-name {
+            font-weight: 600;
+            color: #1e40af;
+            margin-bottom: 4px;
+        }
+        
+        .class-time {
+            font-size: 0.875rem;
+            color: #4b5563;
+            margin-bottom: 4px;
+        }
+        
+        .class-location {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            font-size: 0.75rem;
+            color: #6b7280;
+        }
+        
+        .no-classes {
+            color: #6b7280;
+            font-size: 0.875rem;
+            text-align: center;
+            padding: 16px;
+        }
+        
+        /* Modal Styles */
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.5);
+            display: flex;
+            align-items: flex-end;
+            justify-content: center;
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s, visibility 0.3s;
+        }
+        
+        .modal-overlay.show {
+            opacity: 1;
+            visibility: visible;
+        }
+        
+        .modal {
+            background: white;
+            width: 100%;
+            max-width: 500px;
+            max-height: 80vh;
+            border-radius: 20px 20px 0 0;
+            padding: 24px;
+            transform: translateY(100%);
+            transition: transform 0.3s;
+        }
+        
+        .modal-overlay.show .modal {
+            transform: translateY(0);
+        }
+        
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+        }
+        
+        .modal-title {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: #111827;
+        }
+        
+        .close-button {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: #f3f4f6;
+            border: none;
+            cursor: pointer;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .form-group {
+            margin-bottom: 16px;
+        }
+        
+        .form-label {
+            display: block;
+            font-weight: 600;
+            color: #111827;
+            margin-bottom: 8px;
+            font-size: 0.875rem;
+        }
+        
+        .form-control {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #d1d5db;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: border-color 0.2s;
+        }
+        
+        .form-control:focus {
+            outline: none;
+            border-color: #ef4444;
+            box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1);
+        }
+        
+        .form-row {
+            display: flex;
+            gap: 12px;
+            margin-top: 24px;
+        }
+        
+        .btn {
+            flex: 1;
+            padding: 12px;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        
+        .btn-secondary {
+            background: #f3f4f6;
+            color: #111827;
+            border: 1px solid #e5e7eb;
+        }
+        
+        .btn-secondary:hover {
+            background: #e5e7eb;
+        }
+        
+        .btn-primary {
+            background: #ef4444;
+            color: white;
+            border: none;
+        }
+        
+        .btn-primary:hover {
+            background: #dc2626;
+        }
+        
+        .loading-text {
+            text-align: center;
+            padding: 24px;
+            color: #6b7280;
+        }
+        
+        .empty-text {
+            text-align: center;
+            padding: 24px;
+            color: #6b7280;
+            font-style: italic;
+        }
+        
+        @media (max-width: 500px) {
+            .container {
+                padding: 16px;
+            }
+            
+            .section-header {
+                padding: 12px 16px;
+            }
+            
+            .activity-header {
+                padding: 12px 16px;
+            }
+            
+            .sidebar {
+                width: 260px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Sidebar -->
+    <div class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <button class="close-sidebar" id="closeSidebar">&times;</button>
+        </div>
+        <div class="account-section">
+            <div class="account-icon">
+                <i class="fas fa-user"></i>
+            </div>
+            <div class="account-text">Account</div>
+        </div>
+    </div>
+    
+    <!-- Overlay for sidebar -->
+    <div class="overlay" id="sidebarOverlay"></div>
+
+    <!-- Header -->
+    <div class="header">
+        <button class="menu-button" id="openSidebar">
+            <i class="fas fa-bars"></i>
+        </button>
+        <div class="header-content">
+            <h1 class="header-title">Tracker UCB</h1>
+            <div class="red-line"></div>
+        </div>
+        <div style="width: 40px;"></div> <!-- Spacer for alignment -->
+    </div>
+
+    <div class="container">
+        <!-- Outstanding Tasks Section -->
+        <div class="section-card">
+            <div class="section-header">
+                <h2 class="section-title">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    Outstanding Tasks
+                </h2>
+                <button class="plus-button" id="openModal">+</button>
+            </div>
+            <div class="activities-content" id="activities-board">
+                <div class="loading-text">Loading activities...</div>
+            </div>
+        </div>
+
+        <!-- Weekly Schedule Section -->
+        <h2 class="section-title" style="margin-bottom: 16px;">
+            <i class="fas fa-calendar"></i>
+            Weekly Schedule
+        </h2>
+        <div id="schedule" class="schedule-content">
+            <div class="loading-text">Loading schedule...</div>
+        </div>
+    </div>
+
+    <!-- Add Task Modal -->
+    <div class="modal-overlay" id="addTaskModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 class="modal-title">Add New Task</h3>
+                <button class="close-button" id="closeModal">&times;</button>
+            </div>
+            <form id="add-task-form">
+                <div class="form-group">
+                    <label class="form-label">Task Name *</label>
+                    <input type="text" class="form-control" id="task-name" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Class *</label>
+                    <input type="text" class="form-control" id="task-class" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Due Date *</label>
+                    <input type="date" class="form-control" id="task-due-date" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Description</label>
+                    <textarea class="form-control" id="task-description" rows="3" placeholder="What needs to be done?"></textarea>
+                </div>
+                <div class="form-row">
+                    <button type="button" class="btn btn-secondary" id="cancelTask">Cancel</button>
+                    <button type="button" class="btn btn-primary" id="save-task">Save Task</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // Function to calculate days remaining until due date
+        function calculateDaysRemaining(dueDateStr) {
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+            const dueDate = new Date(dueDateStr);
+            dueDate.setHours(0, 0, 0, 0);
+            const diffTime = dueDate - today;
+            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+            if (diffDays < 0) return { text: 'Overdue', class: 'days-overdue' };
+            if (diffDays === 0) return { text: 'Due today', class: 'days-today' };
+            return { text: diffDays + ' days', class: 'days-upcoming' };
+        }
+
+        // Function to load and display next activities
+        async function loadActivities() {
+            try {
+                const response = await fetch('/api/activities');
+                const activities = await response.json();
+                const board = document.getElementById('activities-board');
+                board.innerHTML = '';
+                if (activities.length === 0) {
+                    board.innerHTML = '<div class="empty-text">No upcoming activities.</div>';
+                    return;
+                }
+                activities.forEach((activity, index) => {
+                    const daysInfo = calculateDaysRemaining(activity.due_date);
+                    const card = document.createElement('div');
+                    card.className = 'activity-card';
+                    card.innerHTML = `
+                        <div class="activity-header" onclick="toggleDetails(${index})">
+                            <div>
+                                <div class="activity-name">${activity.name}</div>
+                                <div class="activity-class">${activity.class}</div>
+                            </div>
+                            <div class="days-info">
+                                <div class="days-text ${daysInfo.class}">${daysInfo.text}</div>
+                                <i class="fas fa-chevron-down chevron"></i>
+                            </div>
+                        </div>
+                        <div class="activity-details" id="activity-details-${index}">
+                            <div class="detail-item">
+                                <i class="fas fa-calendar"></i>
+                                <div>Due: ${new Date(activity.due_date).toLocaleDateString()}</div>
+                            </div>
+                            ${activity.description ? `
+                            <div class="detail-item">
+                                <i class="fas fa-tasks"></i>
+                                <div>
+                                    <div style="font-weight: 600; margin-bottom: 4px;">What to do:</div>
+                                    <div>${activity.description}</div>
+                                </div>
+                            </div>` : ''}
+                            <button class="finish-button" onclick="finishTask(${activity.id})">
+                                <i class="fas fa-check-circle"></i>
+                                Mark as Complete
+                            </button>
+                        </div>
+                    `;
+                    board.appendChild(card);
+                });
+            } catch (error) {
+                console.error('Error loading activities:', error);
+                document.getElementById('activities-board').innerHTML = '<div class="empty-text">Error loading activities.</div>';
+            }
+        }
+
+        // Function to toggle activity details
+        function toggleDetails(index) {
+            const card = document.querySelectorAll('.activity-card')[index];
+            const details = document.getElementById(`activity-details-${index}`);
+            const chevron = card.querySelector('.chevron');
+            
+            if (details.style.display === 'block') {
+                details.style.display = 'none';
+                card.classList.remove('expanded');
+            } else {
+                details.style.display = 'block';
+                card.classList.add('expanded');
+            }
+        }
+
+        // Function to load and display weekly schedule
+        async function loadSchedule() {
+            try {
+                const response = await fetch('/api/schedule');
+                const schedule = await response.json();
+                const container = document.getElementById('schedule');
+                container.innerHTML = '';
+                const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+                days.forEach(day => {
+                    const dayDiv = document.createElement('div');
+                    dayDiv.className = 'schedule-day';
+                    dayDiv.innerHTML = `<div class="day-title">${day}</div>`;
+                    const classes = schedule[day] || [];
+                    if (classes.length === 0) {
+                        dayDiv.innerHTML += '<div class="no-classes">No classes scheduled</div>';
+                    } else {
+                        classes.forEach(cls => {
+                            const item = document.createElement('div');
+                            item.className = 'schedule-item';
+                            item.innerHTML = `
+                                <div class="time-icon">
+                                    <i class="fas fa-clock"></i>
+                                </div>
+                                <div class="class-info">
+                                    <div class="class-name">${cls.class}</div>
+                                    <div class="class-time">${cls.time}</div>
+                                    <div class="class-location">
+                                        <i class="fas fa-map-marker-alt"></i>
+                                        <span>${cls.location}</span>
+                                    </div>
+                                </div>
+                            `;
+                            dayDiv.appendChild(item);
+                        });
+                    }
+                    container.appendChild(dayDiv);
+                });
+            } catch (error) {
+                console.error('Error loading schedule:', error);
+                document.getElementById('schedule').innerHTML = '<div class="empty-text">Error loading schedule.</div>';
+            }
+        }
+
+        // Function to finish a task
+        async function finishTask(taskId) {
+            try {
+                const response = await fetch('/api/finish-activity/' + taskId, { method: 'PUT' });
+                if (response.ok) {
+                    alert('Task finished!');
+                    loadActivities();
+                } else {
+                    alert('Error finishing task.');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Error finishing task.');
+            }
+        }
+
+        // Handle saving new task
+        document.getElementById('save-task').addEventListener('click', async () => {
+            const name = document.getElementById('task-name').value;
+            const className = document.getElementById('task-class').value;
+            const dueDate = document.getElementById('task-due-date').value;
+            const description = document.getElementById('task-description').value;
+
+            if (!name || !className || !dueDate) {
+                alert('Please fill in all required fields.');
+                return;
+            }
+
+            try {
+                const response = await fetch('/api/add-activity', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ name, class: className, due_date: dueDate, description })
+                });
+                if (response.ok) {
+                    alert('Task added successfully!');
+                    document.getElementById('add-task-form').reset();
+                    document.getElementById('addTaskModal').classList.remove('show');
+                    loadActivities();
+                } else {
+                    alert('Error adding task.');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Error adding task.');
+            }
+        });
+
+        // Sidebar handlers
+        document.getElementById('openSidebar').addEventListener('click', () => {
+            document.getElementById('sidebar').classList.add('open');
+            document.getElementById('sidebarOverlay').classList.add('show');
+        });
+
+        document.getElementById('closeSidebar').addEventListener('click', () => {
+            document.getElementById('sidebar').classList.remove('open');
+            document.getElementById('sidebarOverlay').classList.remove('show');
+        });
+
+        document.getElementById('sidebarOverlay').addEventListener('click', () => {
+            document.getElementById('sidebar').classList.remove('open');
+            document.getElementById('sidebarOverlay').classList.remove('show');
+        });
+
+        // Modal handlers
+        document.getElementById('openModal').addEventListener('click', () => {
+            document.getElementById('addTaskModal').classList.add('show');
+        });
+
+        document.getElementById('closeModal').addEventListener('click', () => {
+            document.getElementById('addTaskModal').classList.remove('show');
+        });
+
+        document.getElementById('cancelTask').addEventListener('click', () => {
+            document.getElementById('addTaskModal').classList.remove('show');
+        });
+
+        // Close modal when clicking outside
+        document.getElementById('addTaskModal').addEventListener('click', (e) => {
+            if (e.target === document.getElementById('addTaskModal')) {
+                document.getElementById('addTaskModal').classList.remove('show');
+            }
+        });
+
+        // Load data on page load
+        window.addEventListener('load', () => {
+            loadActivities();
+            loadSchedule();
+        });
+    </script>
+</body>
+</html>
+

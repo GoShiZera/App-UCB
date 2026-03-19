@@ -1,0 +1,740 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tracker UCB - Preview</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background-color: #f8f9fa;
+            color: #1f2937;
+            min-height: 100vh;
+            padding-bottom: 80px;
+        }
+        
+        .header {
+            background: white;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        
+        .header-content {
+            max-width: 500px;
+            margin: 0 auto;
+            padding: 16px;
+            text-align: center;
+        }
+        
+        .title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #111827;
+            margin-bottom: 8px;
+        }
+        
+        .red-line {
+            height: 4px;
+            background-color: #ef4444;
+            border-radius: 2px;
+            width: 100%;
+        }
+        
+        .container {
+            max-width: 500px;
+            margin: 0 auto;
+            padding: 24px 16px;
+        }
+        
+        .section-card {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            border: 1px solid #e5e7eb;
+            overflow: hidden;
+            margin-bottom: 24px;
+        }
+        
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 16px;
+            border-bottom: 1px solid #e5e7eb;
+        }
+        
+        .section-title {
+            font-size: 1.125rem;
+            font-weight: 600;
+            color: #111827;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .section-title i {
+            color: #ef4444;
+        }
+        
+        .plus-button {
+            width: 40px;
+            height: 40px;
+            background-color: #ef4444;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 20px;
+            transition: background-color 0.2s;
+        }
+        
+        .plus-button:hover {
+            background-color: #dc2626;
+        }
+        
+        .activities-content {
+            padding: 8px;
+        }
+        
+        .activity-card {
+            background: #f9fafb;
+            border-radius: 12px;
+            margin-bottom: 12px;
+            overflow: hidden;
+            border: 1px solid #e5e7eb;
+        }
+        
+        .activity-header {
+            padding: 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        
+        .activity-header:hover {
+            background-color: #f3f4f6;
+        }
+        
+        .activity-name {
+            font-weight: 600;
+            color: #111827;
+            flex: 1;
+            text-align: left;
+        }
+        
+        .activity-class {
+            font-size: 0.875rem;
+            color: #6b7280;
+            margin-top: 4px;
+            text-align: left;
+        }
+        
+        .days-info {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            min-width: 80px;
+        }
+        
+        .days-text {
+            font-size: 0.75rem;
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+        
+        .days-overdue { color: #ef4444; }
+        .days-today { color: #eab308; }
+        .days-upcoming { color: #10b981; }
+        
+        .chevron {
+            margin-left: 8px;
+            transition: transform 0.2s;
+        }
+        
+        .expanded .chevron {
+            transform: rotate(180deg);
+        }
+        
+        .activity-details {
+            padding: 16px;
+            background: white;
+            border-top: 1px solid #e5e7eb;
+            display: none;
+        }
+        
+        .activity-details.show {
+            display: block;
+        }
+        
+        .detail-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 8px;
+            margin-bottom: 12px;
+            font-size: 0.875rem;
+            color: #4b5563;
+        }
+        
+        .detail-item i {
+            flex-shrink: 0;
+            margin-top: 2px;
+        }
+        
+        .finish-button {
+            width: 100%;
+            padding: 12px;
+            background-color: #10b981;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            transition: background-color 0.2s;
+        }
+        
+        .finish-button:hover {
+            background-color: #059669;
+        }
+        
+        .schedule-day {
+            background: white;
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 16px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            border: 1px solid #e5e7eb;
+        }
+        
+        .day-title {
+            font-weight: 600;
+            color: #111827;
+            margin-bottom: 12px;
+            font-size: 1rem;
+        }
+        
+        .schedule-item {
+            display: flex;
+            gap: 12px;
+            padding: 12px;
+            background: #eff6ff;
+            border-radius: 8px;
+            margin-bottom: 8px;
+        }
+        
+        .schedule-item:last-child {
+            margin-bottom: 0;
+        }
+        
+        .time-icon {
+            width: 32px;
+            height: 32px;
+            background: #dbeafe;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+        
+        .time-icon i {
+            color: #3b82f6;
+            font-size: 14px;
+        }
+        
+        .class-info {
+            flex: 1;
+            min-width: 0;
+        }
+        
+        .class-name {
+            font-weight: 600;
+            color: #1e40af;
+            margin-bottom: 4px;
+        }
+        
+        .class-time {
+            font-size: 0.875rem;
+            color: #4b5563;
+            margin-bottom: 4px;
+        }
+        
+        .class-location {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            font-size: 0.75rem;
+            color: #6b7280;
+        }
+        
+        .no-classes {
+            color: #6b7280;
+            font-size: 0.875rem;
+            text-align: center;
+            padding: 16px;
+        }
+        
+        /* Modal Styles */
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.5);
+            display: flex;
+            align-items: flex-end;
+            justify-content: center;
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s, visibility 0.3s;
+        }
+        
+        .modal-overlay.show {
+            opacity: 1;
+            visibility: visible;
+        }
+        
+        .modal {
+            background: white;
+            width: 100%;
+            max-width: 500px;
+            max-height: 80vh;
+            border-radius: 20px 20px 0 0;
+            padding: 24px;
+            transform: translateY(100%);
+            transition: transform 0.3s;
+        }
+        
+        .modal-overlay.show .modal {
+            transform: translateY(0);
+        }
+        
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+        }
+        
+        .modal-title {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: #111827;
+        }
+        
+        .close-button {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: #f3f4f6;
+            border: none;
+            cursor: pointer;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .form-group {
+            margin-bottom: 16px;
+        }
+        
+        .form-label {
+            display: block;
+            font-weight: 600;
+            color: #111827;
+            margin-bottom: 8px;
+            font-size: 0.875rem;
+        }
+        
+        .form-control {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #d1d5db;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: border-color 0.2s;
+        }
+        
+        .form-control:focus {
+            outline: none;
+            border-color: #ef4444;
+            box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1);
+        }
+        
+        .form-row {
+            display: flex;
+            gap: 12px;
+            margin-top: 24px;
+        }
+        
+        .btn {
+            flex: 1;
+            padding: 12px;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        
+        .btn-secondary {
+            background: #f3f4f6;
+            color: #111827;
+            border: 1px solid #e5e7eb;
+        }
+        
+        .btn-secondary:hover {
+            background: #e5e7eb;
+        }
+        
+        .btn-primary {
+            background: #ef4444;
+            color: white;
+            border: none;
+        }
+        
+        .btn-primary:hover {
+            background: #dc2626;
+        }
+        
+        .loading-text {
+            text-align: center;
+            padding: 24px;
+            color: #6b7280;
+        }
+        
+        .empty-text {
+            text-align: center;
+            padding: 24px;
+            color: #6b7280;
+            font-style: italic;
+        }
+        
+        @media (max-width: 500px) {
+            .container {
+                padding: 16px;
+            }
+            
+            .section-header {
+                padding: 12px 16px;
+            }
+            
+            .activity-header {
+                padding: 12px 16px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <div class="header">
+        <div class="header-content">
+            <h1 class="title">Tracker UCB</h1>
+            <div class="red-line"></div>
+        </div>
+    </div>
+
+    <div class="container">
+        <!-- Outstanding Tasks Section -->
+        <div class="section-card">
+            <div class="section-header">
+                <h2 class="section-title">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    Outstanding Tasks
+                </h2>
+                <button class="plus-button" id="openModal">+</button>
+            </div>
+            <div class="activities-content" id="activities-board">
+                <!-- Activities will be loaded here -->
+                <div class="activity-card">
+                    <div class="activity-header" onclick="toggleDetails(0)">
+                        <div>
+                            <div class="activity-name">Final Project Submission</div>
+                            <div class="activity-class">Web Development</div>
+                        </div>
+                        <div class="days-info">
+                            <div class="days-text days-upcoming">19 days</div>
+                            <i class="fas fa-chevron-down chevron"></i>
+                        </div>
+                    </div>
+                    <div class="activity-details" id="activity-details-0" style="display: none;">
+                        <div class="detail-item">
+                            <i class="fas fa-calendar"></i>
+                            <div>Due: December 15, 2025</div>
+                        </div>
+                        <div class="detail-item">
+                            <i class="fas fa-tasks"></i>
+                            <div>
+                                <div style="font-weight: 600; margin-bottom: 4px;">What to do:</div>
+                                <div>Complete and submit the final project with all requirements</div>
+                            </div>
+                        </div>
+                        <button class="finish-button" onclick="alert('Task marked as complete!')">
+                            <i class="fas fa-check-circle"></i>
+                            Mark as Complete
+                        </button>
+                    </div>
+                </div>
+                <div class="activity-card">
+                    <div class="activity-header" onclick="toggleDetails(1)">
+                        <div>
+                            <div class="activity-name">Math Exam</div>
+                            <div class="activity-class">Calculus II</div>
+                        </div>
+                        <div class="days-info">
+                            <div class="days-text days-today">Due today</div>
+                            <i class="fas fa-chevron-down chevron"></i>
+                        </div>
+                    </div>
+                    <div class="activity-details" id="activity-details-1" style="display: none;">
+                        <div class="detail-item">
+                            <i class="fas fa-calendar"></i>
+                            <div>Due: November 26, 2025</div>
+                        </div>
+                        <div class="detail-item">
+                            <i class="fas fa-tasks"></i>
+                            <div>
+                                <div style="font-weight: 600; margin-bottom: 4px;">What to do:</div>
+                                <div>Prepare for midterm exam covering chapters 5-8</div>
+                            </div>
+                        </div>
+                        <button class="finish-button" onclick="alert('Task marked as complete!')">
+                            <i class="fas fa-check-circle"></i>
+                            Mark as Complete
+                        </button>
+                    </div>
+                </div>
+                <div class="activity-card">
+                    <div class="activity-header" onclick="toggleDetails(2)">
+                        <div>
+                            <div class="activity-name">Research Paper</div>
+                            <div class="activity-class">Literature</div>
+                        </div>
+                        <div class="days-info">
+                            <div class="days-text days-overdue">Overdue</div>
+                            <i class="fas fa-chevron-down chevron"></i>
+                        </div>
+                    </div>
+                    <div class="activity-details" id="activity-details-2" style="display: none;">
+                        <div class="detail-item">
+                            <i class="fas fa-calendar"></i>
+                            <div>Due: November 20, 2025</div>
+                        </div>
+                        <div class="detail-item">
+                            <i class="fas fa-tasks"></i>
+                            <div>
+                                <div style="font-weight: 600; margin-bottom: 4px;">What to do:</div>
+                                <div>Submit 10-page research paper on modern literature</div>
+                            </div>
+                        </div>
+                        <button class="finish-button" onclick="alert('Task marked as complete!')">
+                            <i class="fas fa-check-circle"></i>
+                            Mark as Complete
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Weekly Schedule Section -->
+        <h2 class="section-title" style="margin-bottom: 16px;">
+            <i class="fas fa-calendar"></i>
+            Weekly Schedule
+        </h2>
+        <div id="schedule" class="schedule-content">
+            <div class="schedule-day">
+                <div class="day-title">Monday</div>
+                <div class="schedule-item">
+                    <div class="time-icon">
+                        <i class="fas fa-clock"></i>
+                    </div>
+                    <div class="class-info">
+                        <div class="class-name">Web Development</div>
+                        <div class="class-time">09:00-11:00</div>
+                        <div class="class-location">
+                            <i class="fas fa-map-marker-alt"></i>
+                            <span>Room 201</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="schedule-item">
+                    <div class="time-icon">
+                        <i class="fas fa-clock"></i>
+                    </div>
+                    <div class="class-info">
+                        <div class="class-name">Database Systems</div>
+                        <div class="class-time">14:00-16:00</div>
+                        <div class="class-location">
+                            <i class="fas fa-map-marker-alt"></i>
+                            <span>Lab 3</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="schedule-day">
+                <div class="day-title">Tuesday</div>
+                <div class="schedule-item">
+                    <div class="time-icon">
+                        <i class="fas fa-clock"></i>
+                    </div>
+                    <div class="class-info">
+                        <div class="class-name">Calculus II</div>
+                        <div class="class-time">10:00-12:00</div>
+                        <div class="class-location">
+                            <i class="fas fa-map-marker-alt"></i>
+                            <span>Room 105</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="schedule-day">
+                <div class="day-title">Wednesday</div>
+                <div class="schedule-item">
+                    <div class="time-icon">
+                        <i class="fas fa-clock"></i>
+                    </div>
+                    <div class="class-info">
+                        <div class="class-name">Literature</div>
+                        <div class="class-time">13:00-15:00</div>
+                        <div class="class-location">
+                            <i class="fas fa-map-marker-alt"></i>
+                            <span>Room 301</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="schedule-day">
+                <div class="day-title">Thursday</div>
+                <div class="schedule-item">
+                    <div class="time-icon">
+                        <i class="fas fa-clock"></i>
+                    </div>
+                    <div class="class-info">
+                        <div class="class-name">Web Development</div>
+                        <div class="class-time">09:00-11:00</div>
+                        <div class="class-location">
+                            <i class="fas fa-map-marker-alt"></i>
+                            <span>Room 201</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="schedule-day">
+                <div class="day-title">Friday</div>
+                <div class="no-classes">No classes scheduled</div>
+            </div>
+            <div class="schedule-day">
+                <div class="day-title">Saturday</div>
+                <div class="no-classes">No classes scheduled</div>
+            </div>
+            <div class="schedule-day">
+                <div class="day-title">Sunday</div>
+                <div class="no-classes">No classes scheduled</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Task Modal -->
+    <div class="modal-overlay" id="addTaskModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 class="modal-title">Add New Task</h3>
+                <button class="close-button" id="closeModal">&times;</button>
+            </div>
+            <form id="add-task-form">
+                <div class="form-group">
+                    <label class="form-label">Task Name *</label>
+                    <input type="text" class="form-control" id="task-name" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Class *</label>
+                    <input type="text" class="form-control" id="task-class" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Due Date *</label>
+                    <input type="date" class="form-control" id="task-due-date" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Description</label>
+                    <textarea class="form-control" id="task-description" rows="3" placeholder="What needs to be done?"></textarea>
+                </div>
+                <div class="form-row">
+                    <button type="button" class="btn btn-secondary" id="cancelTask">Cancel</button>
+                    <button type="button" class="btn btn-primary" id="save-task">Save Task</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // Function to toggle activity details
+        function toggleDetails(index) {
+            const card = document.querySelectorAll('.activity-card')[index];
+            const details = document.getElementById(`activity-details-${index}`);
+            const chevron = card.querySelector('.chevron');
+            
+            if (details.style.display === 'block') {
+                details.style.display = 'none';
+                card.classList.remove('expanded');
+            } else {
+                details.style.display = 'block';
+                card.classList.add('expanded');
+            }
+        }
+
+        // Modal handlers
+        document.getElementById('openModal').addEventListener('click', () => {
+            document.getElementById('addTaskModal').classList.add('show');
+        });
+
+        document.getElementById('closeModal').addEventListener('click', () => {
+            document.getElementById('addTaskModal').classList.remove('show');
+        });
+
+        document.getElementById('cancelTask').addEventListener('click', () => {
+            document.getElementById('addTaskModal').classList.remove('show');
+        });
+
+        // Close modal when clicking outside
+        document.getElementById('addTaskModal').addEventListener('click', (e) => {
+            if (e.target === document.getElementById('addTaskModal')) {
+                document.getElementById('addTaskModal').classList.remove('show');
+            }
+        });
+
+        // Handle saving new task
+        document.getElementById('save-task').addEventListener('click', () => {
+            const name = document.getElementById('task-name').value;
+            const className = document.getElementById('task-class').value;
+            const dueDate = document.getElementById('task-due-date').value;
+
+            if (!name || !className || !dueDate) {
+                alert('Please fill in all required fields.');
+                return;
+            }
+
+            alert('Task added successfully!');
+            document.getElementById('add-task-form').reset();
+            document.getElementById('addTaskModal').classList.remove('show');
+        });
+    </script>
+</body>
+</html>
+
