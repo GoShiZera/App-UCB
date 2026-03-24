@@ -1,16 +1,19 @@
 from flask import *
 from app import app
 from main import get_db_connection
+from models import login_required
 from werkzeug.security import generate_password_hash, check_password_hash
 
 @app.route('/api/add-activity', methods=['POST'])
+@login_required
 def add_activity():
     data = request.get_json()
+    user_id = session['user_id']
     conn = get_db_connection()
     cursor = conn.cursor()
     cursor.execute(
-        "INSERT INTO activities (name, class, due_date, description) VALUES (%s, %s, %s, %s)",
-        (data['name'], data['class'], data['due_date'], data['description'])
+        "INSERT INTO activities (name, class, due_date, description, user_id) VALUES (%s, %s, %s, %s, %s)",
+        (data['name'], data['class'], data['due_date'], data['description'], user_id)
     )
     conn.commit()
     cursor.close()
@@ -18,20 +21,23 @@ def add_activity():
     return jsonify({'message': 'Task added'}), 201
 
 @app.route('/api/activities')
+@login_required
 def get_activities():
+    user_id = session['user_id']
     conn = get_db_connection()
     cursor = conn.cursor(dictionary=True)  # For MySQL; use row_factory for SQLite
-    cursor.execute("SELECT * FROM activities WHERE status = 'pending' ORDER BY due_date")
+    cursor.execute("SELECT * FROM activities WHERE status = 'pending' AND user_id = %s ORDER BY due_date",(session['user_id'],))
     activities = cursor.fetchall()
     cursor.close()
     conn.close()
     return jsonify(activities)
 
 @app.route('/api/finish-activity/<int:task_id>', methods=['PUT'])
+@login_required
 def finish_activity(task_id):
     conn = get_db_connection()
     cursor = conn.cursor()
-    cursor.execute("UPDATE activities SET status = 'completed' WHERE id = %s", (task_id,))
+    cursor.execute("UPDATE activities SET status = 'completed' WHERE id = %s AND user_id = %s", (task_id, session['user_id'],))
     conn.commit()
     cursor.close()
     conn.close()
@@ -62,6 +68,7 @@ def registrar():
             (nome, senha_hash)
         )
         conn.commit()
+        session['user_id'] = cursor.lastrowid
         cursor.close()
         conn.close()
         return redirect(url_for('homepage'))
