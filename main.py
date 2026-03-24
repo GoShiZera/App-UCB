@@ -14,4 +14,4 @@ from routes import *
 from db_routes import *
 
 if __name__ == '__main__':
-    app.run(host='your ip', debug=True)
+    app.run(host='Your IP', debug=True)
