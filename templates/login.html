@@ -1,313 +1,391 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tracker UCB – Login</title>
+    <title>Tracker UCB — Login</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        :root {
+            --red:        #ef4444;
+            --red-dark:   #dc2626;
+            --red-soft:   #fef2f2;
+            --red-border: #fecaca;
+            --ink:        #0f172a;
+            --ink-mid:    #334155;
+            --ink-light:  #64748b;
+            --ink-ghost:  #94a3b8;
+            --surface:    #ffffff;
+            --bg:         #f1f5f9;
+            --border:     #e2e8f0;
+            --radius-sm:  8px;
+            --radius-md:  14px;
+            --radius-lg:  20px;
+            --shadow-sm:  0 1px 3px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.04);
+            --shadow-md:  0 8px 32px rgba(0,0,0,0.10), 0 2px 8px rgba(0,0,0,0.06);
+            --ease:       0.2s ease;
         }
+
+        *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
 
         body {
-            background-color: #f8f9fa;
-            color: #1f2937;
-            min-height: 100vh;
+            font-family: 'DM Sans', sans-serif;
+            background: var(--bg);
+            color: var(--ink);
+            min-height: 100dvh;
+            display: grid;
+            grid-template-rows: auto 1fr;
         }
 
+        /* ─── HEADER ─────────────────────────────── */
         .header {
-            background: white;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-            position: sticky;
-            top: 0;
-            z-index: 100;
+            background: var(--surface);
+            border-bottom: 1px solid var(--border);
+            box-shadow: var(--shadow-sm);
         }
-
-        .header-content {
-            max-width: 500px;
-            margin: 0 auto;
-            padding: 16px;
-            text-align: center;
+        .header-inner {
+            max-width: 1200px; margin: 0 auto;
+            padding: 0 24px; height: 64px;
+            display: flex; align-items: center; gap: 10px;
         }
-
-        .title {
-            font-size: 1.5rem;
-            font-weight: 700;
-            color: #111827;
-            margin-bottom: 8px;
+        .header-dot {
+            width: 10px; height: 10px;
+            background: var(--red); border-radius: 50%;
+            box-shadow: 0 0 0 3px rgba(239,68,68,.15);
+            flex-shrink: 0;
         }
-
-        .red-line {
-            height: 18px;
-            background-color: #ef4444;
-            border-radius: 2px;
-            width: 100%;
+        .header-title {
+            font-size: 1.1rem; font-weight: 700;
+            color: var(--ink); letter-spacing: -.02em;
         }
+        .header-title span { color: var(--red); }
 
-        .container {
-            max-width: 500px;
-            margin: 0 auto;
-            padding: 48px 16px 24px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
-
-        .welcome-text {
-            text-align: center;
-            margin-bottom: 32px;
-        }
-
-        .welcome-text h2 {
-            font-size: 1.5rem;
-            font-weight: 700;
-            color: #111827;
-            margin-bottom: 8px;
-        }
-
-        .welcome-text p {
-            color: #6b7280;
-            font-size: 0.95rem;
-        }
-
-        .section-card {
-            background: white;
-            border-radius: 16px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-            border: 1px solid #e5e7eb;
-            overflow: hidden;
-            width: 100%;
-        }
-
-        .section-header {
-            padding: 20px 24px 16px;
-            border-bottom: 1px solid #e5e7eb;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .section-title {
-            font-size: 1.125rem;
-            font-weight: 600;
-            color: #111827;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .section-title i {
-            color: #ef4444;
-        }
-
-        .form-body {
-            padding: 24px;
-        }
-
-        .form-group {
-            margin-bottom: 18px;
-        }
-
-        .form-label {
-            display: block;
-            font-weight: 600;
-            color: #111827;
-            margin-bottom: 8px;
-            font-size: 0.875rem;
-        }
-
-        .input-wrapper {
-            position: relative;
-        }
-
-        .input-icon {
-            position: absolute;
-            left: 12px;
-            top: 50%;
-            transform: translateY(-50%);
-            color: #9ca3af;
-            font-size: 15px;
-        }
-
-        .form-control {
-            width: 100%;
-            padding: 12px 12px 12px 38px;
-            border: 1px solid #d1d5db;
-            border-radius: 8px;
-            font-size: 1rem;
-            transition: border-color 0.2s;
-            background: #f9fafb;
-        }
-
-        .form-control:focus {
-            outline: none;
-            border-color: #ef4444;
-            box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1);
-            background: white;
-        }
-
-        .btn-primary {
-            width: 100%;
-            padding: 13px;
-            background: #ef4444;
-            color: white;
-            border: none;
-            border-radius: 8px;
-            font-weight: 600;
-            font-size: 1rem;
-            cursor: pointer;
-            transition: background-color 0.2s;
+        /* ─── MAIN AREA ──────────────────────────── */
+        main {
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 8px;
-            margin-top: 8px;
+            padding: 40px 20px;
         }
 
-        .btn-primary:hover {
-            background: #dc2626;
+        /* ─── SPLIT LAYOUT ───────────────────────── */
+        .auth-wrapper {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            max-width: 900px;
+            width: 100%;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-md);
+            overflow: hidden;
+            animation: fadeUp .45s ease both;
         }
 
-        .divider {
-            text-align: center;
-            margin: 20px 0 16px;
-            color: #9ca3af;
-            font-size: 0.875rem;
+        /* Left decorative panel */
+        .auth-side {
+            background: var(--ink);
+            padding: 52px 44px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
             position: relative;
+            overflow: hidden;
         }
 
-        .divider::before,
-        .divider::after {
+        /* Background pattern */
+        .auth-side::before {
             content: '';
             position: absolute;
-            top: 50%;
-            width: 40%;
-            height: 1px;
-            background: #e5e7eb;
+            inset: 0;
+            background:
+                radial-gradient(circle at 20% 20%, rgba(239,68,68,.18) 0%, transparent 55%),
+                radial-gradient(circle at 80% 80%, rgba(239,68,68,.10) 0%, transparent 50%);
+            pointer-events: none;
         }
 
-        .divider::before { left: 0; }
-        .divider::after { right: 0; }
+        .auth-side-top { position: relative; z-index: 1; }
 
-        .register-link {
-            text-align: center;
-            font-size: 0.9rem;
-            color: #6b7280;
+        .side-brand {
+            display: flex; align-items: center; gap: 10px;
+            margin-bottom: 48px;
+        }
+        .side-brand-icon {
+            width: 36px; height: 36px;
+            background: var(--red); border-radius: 10px;
+            display: flex; align-items: center; justify-content: center;
+            flex-shrink: 0;
+        }
+        .side-brand-icon i { color: white; font-size: 15px; }
+        .side-brand-name {
+            font-size: 1rem; font-weight: 700;
+            color: white; letter-spacing: -.02em;
         }
 
-        .register-link a {
-            color: #ef4444;
-            font-weight: 600;
-            text-decoration: none;
-        }
-
-        .register-link a:hover {
-            text-decoration: underline;
-        }
-
-        .error-msg {
-            background: #fef2f2;
-            border: 1px solid #fecaca;
-            color: #dc2626;
-            border-radius: 8px;
-            padding: 12px;
-            font-size: 0.875rem;
+        .side-headline {
+            font-size: 2rem; font-weight: 700;
+            color: white; line-height: 1.2;
+            letter-spacing: -.03em;
             margin-bottom: 16px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
+        }
+        .side-headline em {
+            font-style: normal;
+            color: #fca5a5;
         }
 
-        @media (max-width: 500px) {
-            .container { padding: 32px 16px 24px; }
+        .side-desc {
+            font-size: .88rem;
+            color: rgba(255,255,255,.45);
+            line-height: 1.65;
+        }
+
+        .side-bottom {
+            position: relative; z-index: 1;
+        }
+
+        .side-feature {
+            display: flex; align-items: center; gap: 12px;
+            margin-bottom: 14px;
+        }
+        .side-feature:last-child { margin-bottom: 0; }
+        .side-feature-icon {
+            width: 32px; height: 32px;
+            background: rgba(255,255,255,.07);
+            border: 1px solid rgba(255,255,255,.1);
+            border-radius: 8px;
+            display: flex; align-items: center; justify-content: center;
+            flex-shrink: 0;
+            color: #fca5a5; font-size: .8rem;
+        }
+        .side-feature-text {
+            font-size: .82rem;
+            color: rgba(255,255,255,.5);
+        }
+
+        /* Right form panel */
+        .auth-form-wrap {
+            padding: 52px 44px;
+            display: flex; flex-direction: column; justify-content: center;
+        }
+
+        .form-eyebrow {
+            font-size: .7rem; font-weight: 700;
+            text-transform: uppercase; letter-spacing: .1em;
+            color: var(--red);
+            margin-bottom: 8px;
+            font-family: 'DM Mono', monospace;
+        }
+
+        .form-title {
+            font-size: 1.65rem; font-weight: 700;
+            color: var(--ink); letter-spacing: -.03em;
+            margin-bottom: 6px;
+        }
+
+        .form-subtitle {
+            font-size: .87rem;
+            color: var(--ink-ghost);
+            margin-bottom: 32px;
+            line-height: 1.5;
+        }
+
+        /* Flash error */
+        .flash-error {
+            display: flex; align-items: center; gap: 10px;
+            background: var(--red-soft);
+            border: 1px solid var(--red-border);
+            color: var(--red-dark);
+            border-radius: var(--radius-sm);
+            padding: 11px 14px;
+            font-size: .84rem; font-weight: 500;
+            margin-bottom: 20px;
+        }
+        .flash-error i { flex-shrink: 0; font-size: .85rem; }
+
+        /* Fields */
+        .field-group { margin-bottom: 18px; }
+
+        .field-label {
+            display: block;
+            font-size: .72rem; font-weight: 700;
+            text-transform: uppercase; letter-spacing: .07em;
+            color: var(--ink-mid);
+            margin-bottom: 7px;
+        }
+
+        .input-wrap { position: relative; }
+
+        .input-icon {
+            position: absolute; left: 13px; top: 50%;
+            transform: translateY(-50%);
+            color: var(--ink-ghost); font-size: 13px;
+            pointer-events: none;
+            transition: color var(--ease);
+        }
+
+        .field-input {
+            width: 100%;
+            padding: 12px 14px 12px 40px;
+            border: 1.5px solid var(--border);
+            border-radius: var(--radius-sm);
+            font-family: 'DM Sans', sans-serif;
+            font-size: .92rem; color: var(--ink);
+            background: var(--bg);
+            transition: border-color var(--ease), box-shadow var(--ease), background var(--ease);
+        }
+        .field-input::placeholder { color: var(--ink-ghost); }
+        .field-input:focus {
+            outline: none;
+            border-color: var(--red);
+            background: var(--surface);
+            box-shadow: 0 0 0 3px rgba(239,68,68,.1);
+        }
+        .input-wrap:focus-within .input-icon { color: var(--red); }
+
+        /* Submit button */
+        .submit-btn {
+            width: 100%; padding: 13px;
+            background: var(--red); color: white;
+            border: none; border-radius: var(--radius-sm);
+            font-family: 'DM Sans', sans-serif;
+            font-size: .92rem; font-weight: 700;
+            cursor: pointer; margin-top: 8px;
+            display: flex; align-items: center; justify-content: center; gap: 8px;
+            transition: background var(--ease), transform var(--ease), box-shadow var(--ease);
+            box-shadow: 0 2px 8px rgba(239,68,68,.25);
+        }
+        .submit-btn:hover {
+            background: var(--red-dark);
+            box-shadow: 0 4px 16px rgba(239,68,68,.35);
+            transform: translateY(-1px);
+        }
+        .submit-btn:active { transform: none; box-shadow: none; }
+
+        /* Footer link */
+        .form-footer {
+            margin-top: 24px;
+            padding-top: 20px;
+            border-top: 1px solid var(--border);
+            text-align: center;
+            font-size: .86rem;
+            color: var(--ink-ghost);
+        }
+        .form-footer a {
+            color: var(--red); font-weight: 700;
+            text-decoration: none;
+            transition: color var(--ease);
+        }
+        .form-footer a:hover { color: var(--red-dark); text-decoration: underline; }
+
+        /* ─── ANIMATIONS ──────────────────────────── */
+        @keyframes fadeUp {
+            from { opacity: 0; transform: translateY(16px); }
+            to   { opacity: 1; transform: none; }
+        }
+
+        /* ─── RESPONSIVE ──────────────────────────── */
+        @media (max-width: 700px) {
+            .auth-wrapper { grid-template-columns: 1fr; }
+            .auth-side { display: none; }
+            .auth-form-wrap { padding: 36px 28px; }
+        }
+        @media (max-width: 400px) {
+            .auth-form-wrap { padding: 28px 20px; }
+            .form-title { font-size: 1.4rem; }
         }
     </style>
 </head>
 <body>
 
     <!-- Header -->
-    <div class="header">
-        <div class="header-content">
-            <h1 class="title">Tracker UCB</h1>
-            <div class="red-line"></div>
+    <header class="header">
+        <div class="header-inner">
+            <div class="header-dot"></div>
+            <h1 class="header-title">Tracker <span>UCB</span></h1>
         </div>
-    </div>
+    </header>
 
-    <div class="container">
+    <main>
+        <div class="auth-wrapper">
 
-        <div class="welcome-text">
-            <h2>Welcome back 👋</h2>
-            <p>Sign in to access your tasks and schedule</p>
-        </div>
-
-        <div class="section-card">
-            <div class="section-header">
-                <h2 class="section-title">
-                    <i class="fas fa-sign-in-alt"></i>
-                    Login
-                </h2>
+            <!-- Left decorative panel -->
+            <div class="auth-side">
+                <div class="auth-side-top">
+                    <div class="side-brand">
+                        <div class="side-brand-icon"><i class="fas fa-graduation-cap"></i></div>
+                        <span class="side-brand-name">Tracker UCB</span>
+                    </div>
+                    <h2 class="side-headline">Sua agenda<br><em>universitária.</em></h2>
+                    <p class="side-desc">Gerencie tarefas, horários e prazos em um só lugar. Nunca mais perca uma entrega.</p>
+                </div>
+                <div class="side-bottom">
+                    <div class="side-feature">
+                        <div class="side-feature-icon"><i class="fas fa-bolt"></i></div>
+                        <span class="side-feature-text">Tarefas pendentes sempre visíveis</span>
+                    </div>
+                    <div class="side-feature">
+                        <div class="side-feature-icon"><i class="fas fa-calendar-week"></i></div>
+                        <span class="side-feature-text">Grade horária organizada por dia</span>
+                    </div>
+                    <div class="side-feature">
+                        <div class="side-feature-icon"><i class="fas fa-fire"></i></div>
+                        <span class="side-feature-text">Alertas de prazos atrasados</span>
+                    </div>
+                </div>
             </div>
 
-            <div class="form-body">
-                <!-- Show this block if Flask flashes an error -->
+            <!-- Right form panel -->
+            <div class="auth-form-wrap">
+                <p class="form-eyebrow">Acesse sua conta</p>
+                <h2 class="form-title">Bem-vindo de volta</h2>
+                <p class="form-subtitle">Entre com seu usuário e senha para continuar.</p>
+
                 {% with messages = get_flashed_messages() %}
                 {% if messages %}
-                <div class="error-msg">
+                <div class="flash-error">
                     <i class="fas fa-exclamation-circle"></i>
-                    {{ messages[0] }}
+                    <div>
+                        {% for msg in messages %}
+                        <div>{{ msg }}</div>
+                        {% endfor %}
+                    </div>
                 </div>
                 {% endif %}
                 {% endwith %}
 
                 <form method="POST" action="{{ url_for('login') }}">
-                    <div class="form-group">
-                        <label class="form-label">Username</label>
-                        <div class="input-wrapper">
+                    <div class="field-group">
+                        <label class="field-label" for="nome">Usuário</label>
+                        <div class="input-wrap">
                             <i class="fas fa-user input-icon"></i>
-                            <input
-                                type="text"
-                                class="form-control"
-                                name="nomeForm"
-                                placeholder="Enter your username"
-                                required
-                                autocomplete="username"
-                            >
+                            <input class="field-input" type="text" id="nome" name="nomeForm"
+                                   placeholder="Seu nome de usuário" required autocomplete="username">
                         </div>
                     </div>
 
-                    <div class="form-group">
-                        <label class="form-label">Password</label>
-                        <div class="input-wrapper">
+                    <div class="field-group">
+                        <label class="field-label" for="senha">Senha</label>
+                        <div class="input-wrap">
                             <i class="fas fa-lock input-icon"></i>
-                            <input
-                                type="password"
-                                class="form-control"
-                                name="passwordForm"
-                                placeholder="Enter your password"
-                                required
-                                autocomplete="current-password"
-                            >
+                            <input class="field-input" type="password" id="senha" name="passwordForm"
+                                   placeholder="Sua senha" required autocomplete="current-password">
                         </div>
                     </div>
 
-                    <button type="submit" class="btn-primary">
-                        <i class="fas fa-sign-in-alt"></i>
-                        Sign In
+                    <button type="submit" class="submit-btn">
+                        <i class="fas fa-arrow-right"></i>
+                        Entrar
                     </button>
                 </form>
 
-                <div class="divider">or</div>
-
-                <div class="register-link">
-                    Don't have an account? <a href="{{ url_for('registrar') }}">Create one</a>
+                <div class="form-footer">
+                    Não tem conta? <a href="{{ url_for('registrar') }}">Criar agora</a>
                 </div>
             </div>
-        </div>
 
-    </div>
+        </div>
+    </main>
+
 </body>
 </html>

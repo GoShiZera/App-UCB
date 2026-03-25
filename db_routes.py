@@ -12,8 +12,8 @@ def add_activity():
     conn = get_db_connection()
     cursor = conn.cursor()
     cursor.execute(
-        "INSERT INTO activities (name, class, due_date, description, user_id) VALUES (%s, %s, %s, %s, %s)",
-        (data['name'], data['class'], data['due_date'], data['description'], user_id)
+    "INSERT INTO activities (name, class, due_date, description, status, user_id) VALUES (?, ?, ?, ?, 'pending', ?)",
+    (data['name'], data['class'], data['due_date'], data['description'], user_id)
     )
     conn.commit()
     cursor.close()
@@ -25,19 +25,21 @@ def add_activity():
 def get_activities():
     user_id = session['user_id']
     conn = get_db_connection()
-    cursor = conn.cursor(dictionary=True)  # For MySQL; use row_factory for SQLite
-    cursor.execute("SELECT * FROM activities WHERE status = 'pending' AND user_id = %s ORDER BY due_date",(session['user_id'],))
+    cursor = conn.cursor()  # For MySQL; use row_factory for SQLite
+    cursor.execute("SELECT * FROM activities WHERE status = 'pending' AND user_id = ? ORDER BY due_date",(user_id,))
     activities = cursor.fetchall()
     cursor.close()
     conn.close()
+    activities = [dict(row) for row in activities]
     return jsonify(activities)
 
 @app.route('/api/finish-activity/<int:task_id>', methods=['PUT'])
 @login_required
 def finish_activity(task_id):
+    user_id = session['user_id']
     conn = get_db_connection()
     cursor = conn.cursor()
-    cursor.execute("UPDATE activities SET status = 'completed' WHERE id = %s AND user_id = %s", (task_id, session['user_id'],))
+    cursor.execute("UPDATE activities SET status = 'completed' WHERE id = ? AND user_id = ?", (task_id, user_id,))
     conn.commit()
     cursor.close()
     conn.close()
@@ -57,14 +59,14 @@ def registrar():
         senha_hash = generate_password_hash(senha)
         conn = get_db_connection()
         cursor = conn.cursor()
-        cursor.execute("SELECT * FROM users WHERE nome = %s", (nome,))
+        cursor.execute("SELECT * FROM users WHERE nome = ?", (nome,))
         if cursor.fetchone():
             cursor.close()
             conn.close()
             flash('Usuário já está em uso')
             return render_template('register.html')
         cursor.execute(
-            "INSERT INTO users (nome, password) VALUES (%s, %s)",
+            "INSERT INTO users (nome, password) VALUES (?, ?)",
             (nome, senha_hash)
         )
         conn.commit()
@@ -80,9 +82,9 @@ def login():
         nome = request.form['nomeForm']
         senha = request.form['passwordForm']
         conn = get_db_connection()
-        cursor = conn.cursor(dictionary=True)
+        cursor = conn.cursor()
         cursor.execute(
-            "SELECT * FROM users WHERE nome = %s",
+            "SELECT * FROM users WHERE nome = ?",
             (nome,)
         )
         user = cursor.fetchone()

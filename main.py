@@ -1,17 +1,43 @@
 from flask import Flask, request, jsonify
-import mysql.connector
+import sqlite3
 
 from app import app
 
 def get_db_connection():
-    return mysql.connector.connect(
-        host = 'localhost',
-        user = 'root',
-        password = 'Lorem Ipsum',
-        database = 'ucb_project'
+    conn = sqlite3.connect('database.db')
+    conn.row_factory = sqlite3.Row
+    return conn
+
+def init_db():
+    conn = get_db_connection()
+    cursor = conn.cursor()
+
+    cursor.execute("""
+    CREATE TABLE IF NOT EXISTS users (
+        idusers INTEGER PRIMARY KEY AUTOINCREMENT,
+        nome TEXT UNIQUE,
+        password TEXT
     )
+    """)
+
+    cursor.execute("""
+    CREATE TABLE IF NOT EXISTS activities (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        name TEXT,
+        class TEXT,
+        due_date TEXT,
+        description TEXT,
+        status TEXT,
+        user_id INTEGER
+    )
+    """)
+
+    conn.commit()
+    conn.close()
+init_db()
+
 from routes import *
 from db_routes import *
 
 if __name__ == '__main__':
-    app.run(host='Your IP', debug=True)
+    app.run(host='0.0.0.0', port=10000, debug=True)
