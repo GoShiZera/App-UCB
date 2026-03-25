@@ -5,20 +5,21 @@ from main import get_db_connection
 from models import login_required
 from werkzeug.security import generate_password_hash, check_password_hash
 from werkzeug.utils import secure_filename
+import uuid
 
 UPLOAD_FOLDER = 'static/uploads'
-app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
 @app.route('/api/me')
 @login_required
 def get_me():
     user_id = session['user_id']
     conn = get_db_connection()
-    cursor = conn.cursor(dictionary=True)
-    cursor.execute("SELECT idusers as id, nome, bio, avatar_url FROM users WHERE idusers = %s", (user_id,))
+    cursor = conn.cursor()
+    cursor.execute("SELECT idusers as id, nome, bio, avatar_url FROM users WHERE idusers = ?", (user_id,))
     user = cursor.fetchone()
     cursor.close(); conn.close()
-    return jsonify(user)
+    return jsonify(dict(user))
 
 @app.route('/api/add-activity', methods=['POST'])
 @login_required
@@ -40,14 +41,14 @@ def add_activity():
 @login_required
 def get_activities():
     user_id = session['user_id']
+    status = request.args.get('status', 'pending')
     conn = get_db_connection()
     cursor = conn.cursor()  # For MySQL; use row_factory for SQLite
-    cursor.execute("SELECT * FROM activities WHERE status = 'pending' AND user_id = ? ORDER BY due_date",(user_id,))
+    cursor.execute("SELECT * FROM activities WHERE status = ? AND user_id = ? ORDER BY due_date",(status, user_id,))
     activities = cursor.fetchall()
     cursor.close()
     conn.close()
-    activities = [dict(row) for row in activities]
-    return jsonify(activities)
+    return jsonify([dict(row) for row in activities])
 
 @app.route('/api/finish-activity/<int:task_id>', methods=['PUT'])
 @login_required
@@ -168,9 +169,13 @@ def update_profile():
     avatar_url = None
     if file and file.filename != '':
         filename = secure_filename(file.filename)
-        filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+        upload_folder = app.config['UPLOAD_FOLDER']
+        os.makedirs(upload_folder, exist_ok=True)
+        ext = filename.split('.')[-1]
+        unique_name = f"{uuid.uuid4()}.{ext}"
+        filepath = os.path.join(upload_folder, unique_name)
         file.save(filepath)
-        avatar_url = f'/static/uploads/{filename}'
+        avatar_url = f'/static/uploads/{unique_name}'
     conn = get_db_connection()
     cursor = conn.cursor()
     if avatar_url:

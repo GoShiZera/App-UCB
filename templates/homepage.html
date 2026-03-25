@@ -730,13 +730,13 @@
     async function loadActivities() {
         try {
             // Fetch pending
-            const resPending = await fetch('/api/activities');
+            const resPending = await fetch('/api/activities?status=pending');
             allActivities = await resPending.json();
 
             // Fetch completed if toggle is on or to update count
             if (showCompleted) {
                 try {
-                    const resDone = await fetch('/api/activities/completed');
+                    const resDone = await fetch('/api/activities?status=completed');
                     doneActivities = resDone.ok ? await resDone.json() : [];
                 } catch(e) { doneActivities = []; }
             }

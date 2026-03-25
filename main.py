@@ -22,6 +22,16 @@ def init_db():
     )
     """)
 
+    try:
+        cursor.execute("ALTER TABLE users ADD COLUMN bio TEXT DEFAULT ''")
+    except:
+        pass
+
+    try:
+        cursor.execute("ALTER TABLE users ADD COLUMN avatar_url TEXT DEFAULT ''")
+    except:
+        pass
+
     cursor.execute("""
     CREATE TABLE IF NOT EXISTS activities (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
