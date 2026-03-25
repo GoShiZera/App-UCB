@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tracker UCB — Perfil</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --red:        #ef4444;
+            --red-dark:   #dc2626;
+            --red-soft:   #fef2f2;
+            --red-border: #fecaca;
+            --ink:        #0f172a;
+            --ink-mid:    #334155;
+            --ink-light:  #64748b;
+            --ink-ghost:  #94a3b8;
+            --surface:    #ffffff;
+            --bg:         #f1f5f9;
+            --border:     #e2e8f0;
+            --green:      #10b981;
+            --green-soft: #ecfdf5;
+            --radius-sm:  8px;
+            --radius-md:  14px;
+            --radius-lg:  20px;
+            --shadow-sm:  0 1px 3px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.04);
+            --shadow-md:  0 8px 32px rgba(0,0,0,0.10), 0 2px 8px rgba(0,0,0,0.06);
+            --ease:       0.2s ease;
+        }
+        *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+        body { font-family:'DM Sans',sans-serif; background:var(--bg); color:var(--ink); min-height:100dvh; }
+
+        /* ── HEADER ─────────────────────────────────────────────────── */
+        .header {
+            position:sticky; top:0; z-index:100;
+            height:64px; background:var(--surface);
+            border-bottom:1px solid var(--border); box-shadow:var(--shadow-sm);
+        }
+        .header-inner {
+            max-width:680px; margin:0 auto;
+            padding:0 20px; height:100%;
+            display:flex; align-items:center; gap:14px;
+        }
+        .back-btn {
+            width:36px; height:36px; border-radius:50%;
+            background:var(--bg); border:1px solid var(--border);
+            display:flex; align-items:center; justify-content:center;
+            color:var(--ink-mid); text-decoration:none; flex-shrink:0;
+            transition:background var(--ease),border-color var(--ease);
+        }
+        .back-btn:hover { background:var(--border); }
+        .header-title-wrap { flex:1; min-width:0; }
+        .header-page-title { font-size:1rem; font-weight:700; color:var(--ink); }
+        .header-page-sub   { font-size:.73rem; color:var(--ink-ghost); margin-top:1px; }
+
+        .header-logo-dot { width:9px; height:9px; background:var(--red); border-radius:50%; box-shadow:0 0 0 3px rgba(239,68,68,.15); flex-shrink:0; margin-left:auto; }
+
+        /* ── PAGE ───────────────────────────────────────────────────── */
+        .page-wrapper { max-width:680px; margin:0 auto; padding:32px 20px 60px; }
+
+        /* ── AVATAR SECTION ─────────────────────────────────────────── */
+        .avatar-section {
+            background:var(--surface); border:1px solid var(--border);
+            border-radius:var(--radius-lg); box-shadow:var(--shadow-sm);
+            padding:32px 24px 24px;
+            display:flex; flex-direction:column; align-items:center;
+            margin-bottom:20px;
+            animation:fadeUp .4s ease both;
+            position:relative; overflow:hidden;
+        }
+
+        /* Decorative top strip */
+        .avatar-section::before {
+            content:'';
+            position:absolute; top:0; left:0; right:0; height:72px;
+            background:var(--ink);
+        }
+
+        .avatar-wrapper {
+            position:relative; z-index:1; margin-bottom:12px;
+        }
+
+        .avatar-img {
+            width:90px; height:90px; border-radius:50%;
+            border:3px solid var(--surface);
+            background:var(--red);
+            display:flex; align-items:center; justify-content:center;
+            font-size:2rem; font-weight:700; color:white;
+            overflow:hidden; position:relative;
+            box-shadow:0 4px 16px rgba(0,0,0,0.15);
+        }
+        .avatar-img img {
+            width:100%; height:100%; object-fit:cover;
+            position:absolute; inset:0;
+        }
+
+        .avatar-upload-btn {
+            position:absolute; bottom:0; right:0;
+            width:30px; height:30px; border-radius:50%;
+            background:var(--ink); border:2px solid var(--surface);
+            display:flex; align-items:center; justify-content:center;
+            cursor:pointer; color:white; font-size:.7rem;
+            transition:background var(--ease);
+        }
+        .avatar-upload-btn:hover { background:var(--ink-mid); }
+        #avatarFileInput { display:none; }
+
+        .avatar-name {
+            font-size:1.2rem; font-weight:700; color:var(--ink);
+            margin-bottom:2px; text-align:center;
+        }
+        .avatar-tag {
+            font-size:.75rem; color:var(--ink-ghost);
+            font-family:'DM Mono',monospace;
+        }
+
+        .avatar-preview-hint {
+            margin-top:10px; font-size:.75rem; color:var(--ink-ghost);
+            text-align:center; display:none;
+        }
+        .avatar-preview-hint.show { display:block; }
+
+        /* ── FORM CARD ──────────────────────────────────────────────── */
+        .form-card {
+            background:var(--surface); border:1px solid var(--border);
+            border-radius:var(--radius-lg); box-shadow:var(--shadow-sm);
+            overflow:hidden; margin-bottom:16px;
+            animation:fadeUp .4s ease both;
+        }
+        .form-card:nth-child(2) { animation-delay:.06s; }
+        .form-card:nth-child(3) { animation-delay:.12s; }
+
+        .form-card-header {
+            padding:16px 20px; border-bottom:1px solid var(--border);
+            display:flex; align-items:center; gap:10px;
+        }
+        .form-card-icon {
+            width:30px; height:30px; border-radius:8px;
+            background:var(--red-soft); color:var(--red);
+            display:flex; align-items:center; justify-content:center; font-size:.8rem;
+        }
+        .form-card-title { font-size:.9rem; font-weight:700; color:var(--ink); }
+
+        .form-card-body { padding:20px; }
+
+        /* Fields */
+        .field-group { margin-bottom:16px; }
+        .field-group:last-child { margin-bottom:0; }
+        .field-label {
+            display:block; font-size:.7rem; font-weight:700;
+            text-transform:uppercase; letter-spacing:.08em;
+            color:var(--ink-mid); margin-bottom:7px;
+        }
+        .field-input {
+            width:100%; padding:12px 14px;
+            border:1.5px solid var(--border); border-radius:var(--radius-sm);
+            font-size:.92rem; font-family:'DM Sans',sans-serif; color:var(--ink);
+            background:var(--bg); transition:border-color var(--ease),box-shadow var(--ease),background var(--ease);
+        }
+        .field-input:focus { outline:none; border-color:var(--red); background:var(--surface); box-shadow:0 0 0 3px rgba(239,68,68,.1); }
+        textarea.field-input { resize:vertical; min-height:90px; line-height:1.5; }
+        .field-hint { font-size:.72rem; color:var(--ink-ghost); margin-top:5px; }
+        .char-count { float:right; font-family:'DM Mono',monospace; }
+
+        /* ── SUBMIT AREA ────────────────────────────────────────────── */
+        .submit-area {
+            display:flex; gap:12px; margin-top:4px;
+            animation:fadeUp .4s ease .18s both;
+        }
+        .btn-cancel {
+            flex:1; padding:13px; border-radius:var(--radius-sm);
+            font-size:.9rem; font-weight:700; font-family:'DM Sans',sans-serif;
+            cursor:pointer; background:var(--bg); color:var(--ink-mid);
+            border:1.5px solid var(--border);
+            transition:background var(--ease);
+            text-align:center; text-decoration:none; display:flex; align-items:center; justify-content:center;
+        }
+        .btn-cancel:hover { background:var(--border); }
+        .btn-save {
+            flex:2; padding:13px; border-radius:var(--radius-sm);
+            font-size:.9rem; font-weight:700; font-family:'DM Sans',sans-serif;
+            cursor:pointer; background:var(--red); color:white; border:none;
+            display:flex; align-items:center; justify-content:center; gap:8px;
+            box-shadow:0 2px 8px rgba(239,68,68,.25);
+            transition:background var(--ease),transform var(--ease),box-shadow var(--ease);
+        }
+        .btn-save:hover { background:var(--red-dark); box-shadow:0 4px 16px rgba(239,68,68,.35); transform:translateY(-1px); }
+        .btn-save:active { transform:none; box-shadow:none; }
+        .btn-save:disabled { background:#fca5a5; cursor:not-allowed; transform:none; box-shadow:none; }
+
+        /* ── TOAST ──────────────────────────────────────────────────── */
+        .toast-container { position:fixed; bottom:24px; right:24px; z-index:999; display:flex; flex-direction:column; gap:8px; pointer-events:none; }
+        .toast {
+            display:flex; align-items:center; gap:10px;
+            padding:12px 16px; background:var(--ink); color:white;
+            border-radius:var(--radius-md); font-size:.84rem; font-weight:500;
+            box-shadow:0 12px 40px rgba(0,0,0,.12); max-width:300px;
+            animation:toastIn .3s ease both,toastOut .3s ease 2.7s both;
+        }
+        .toast.success i { color:var(--green); }
+        .toast.error   i { color:#f87171; }
+        @keyframes toastIn  { from{opacity:0;transform:translateX(16px)} to{opacity:1;transform:none} }
+        @keyframes toastOut { to{opacity:0;transform:translateX(10px)} }
+        @keyframes fadeUp   { from{opacity:0;transform:translateY(12px)} to{opacity:1;transform:none} }
+
+        @media (max-width:520px) {
+            .page-wrapper { padding:20px 14px 60px; }
+            .submit-area { flex-direction:column-reverse; }
+            .toast-container { bottom:16px; right:14px; left:14px; }
+            .toast { max-width:100%; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="toast-container" id="toastContainer"></div>
+
+<!-- Header -->
+<header class="header">
+    <div class="header-inner">
+        <a class="back-btn" href="/" title="Voltar">
+            <i class="fas fa-arrow-left"></i>
+        </a>
+        <div class="header-title-wrap">
+            <div class="header-page-title">Meu Perfil</div>
+            <div class="header-page-sub">Edite suas informações</div>
+        </div>
+        <div class="header-logo-dot"></div>
+    </div>
+</header>
+
+<div class="page-wrapper">
+
+    <!-- Avatar section -->
+    <div class="avatar-section">
+        <div class="avatar-wrapper">
+            <div class="avatar-img" id="avatarDisplay">
+                <span id="avatarInitial">?</span>
+            </div>
+            <label class="avatar-upload-btn" for="avatarFileInput" title="Trocar foto">
+                <i class="fas fa-camera"></i>
+            </label>
+            <input type="file" id="avatarFileInput" accept="image/jpeg,image/png,image/webp">
+        </div>
+        <div class="avatar-name" id="displayName">Carregando...</div>
+        <div class="avatar-tag" id="displayTag">@usuário</div>
+        <div class="avatar-preview-hint" id="previewHint">
+            <i class="fas fa-info-circle"></i> Nova foto selecionada — salve para confirmar
+        </div>
+    </div>
+
+    <!-- Form: account info -->
+    <div class="form-card">
+        <div class="form-card-header">
+            <div class="form-card-icon"><i class="fas fa-user"></i></div>
+            <span class="form-card-title">Informações da Conta</span>
+        </div>
+        <div class="form-card-body">
+            <div class="field-group">
+                <label class="field-label" for="inputNome">Nome de usuário</label>
+                <input type="text" class="field-input" id="inputNome" name="nome"
+                       placeholder="Seu nome de usuário" maxlength="50" autocomplete="username">
+                <div class="field-hint"><span class="char-count" id="nomeCount">0/50</span></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Form: bio -->
+    <div class="form-card">
+        <div class="form-card-header">
+            <div class="form-card-icon"><i class="fas fa-align-left"></i></div>
+            <span class="form-card-title">Bio</span>
+        </div>
+        <div class="form-card-body">
+            <div class="field-group">
+                <label class="field-label" for="inputBio">Sobre você</label>
+                <textarea class="field-input" id="inputBio" name="bio"
+                          placeholder="Conte um pouco sobre você..." maxlength="160"></textarea>
+                <div class="field-hint"><span class="char-count" id="bioCount">0/160</span></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Actions -->
+    <div class="submit-area">
+        <a class="btn-cancel" href="/">Cancelar</a>
+        <button class="btn-save" id="saveProfileBtn">
+            <i class="fas fa-check"></i> Salvar Alterações
+        </button>
+    </div>
+
+</div>
+
+<script>
+    // ── Utils ──────────────────────────────────────────────────────────
+    function showToast(msg, type='success') {
+        const wrap = document.getElementById('toastContainer');
+        const el   = document.createElement('div');
+        el.className = `toast ${type}`;
+        el.innerHTML = `<i class="fas fa-${type==='success'?'check-circle':'exclamation-circle'}"></i> ${msg}`;
+        wrap.appendChild(el);
+        setTimeout(() => el.remove(), 3100);
+    }
+
+    let selectedFile = null;
+    let currentUser  = {};
+
+    // ── Char counters ──────────────────────────────────────────────────
+    const nomeInput = document.getElementById('inputNome');
+    const bioInput  = document.getElementById('inputBio');
+
+    function updateCounters() {
+        document.getElementById('nomeCount').textContent = `${nomeInput.value.length}/50`;
+        document.getElementById('bioCount').textContent  = `${bioInput.value.length}/160`;
+        // Live preview the display name
+        const v = nomeInput.value.trim();
+        if (v) {
+            document.getElementById('displayName').textContent = v;
+            document.getElementById('displayTag').textContent  = '@' + v.toLowerCase().replace(/\s+/g, '');
+            document.getElementById('avatarInitial').textContent = v[0].toUpperCase();
+        }
+    }
+
+    nomeInput.addEventListener('input', updateCounters);
+    bioInput.addEventListener('input', updateCounters);
+
+    // ── Avatar preview ─────────────────────────────────────────────────
+    document.getElementById('avatarFileInput').addEventListener('change', function() {
+        const file = this.files[0];
+        if (!file) return;
+        selectedFile = file;
+        const reader = new FileReader();
+        reader.onload = e => {
+            const display = document.getElementById('avatarDisplay');
+            // Remove existing img if any
+            const existing = display.querySelector('img');
+            if (existing) existing.remove();
+            const img = document.createElement('img');
+            img.src = e.target.result;
+            display.appendChild(img);
+            document.getElementById('previewHint').classList.add('show');
+        };
+        reader.readAsDataURL(file);
+    });
+
+    // ── Load current profile ───────────────────────────────────────────
+    async function loadProfile() {
+        try {
+            const res  = await fetch('/api/me');
+            if (!res.ok) return;
+            currentUser = await res.json();
+
+            const nome = currentUser.nome || '';
+            const bio  = currentUser.bio  || '';
+
+            nomeInput.value = nome;
+            bioInput.value  = bio;
+            updateCounters();
+
+            document.getElementById('displayName').textContent  = nome || 'Usuário';
+            document.getElementById('displayTag').textContent   = '@' + (nome || 'usuario').toLowerCase().replace(/\s+/g,'');
+            document.getElementById('avatarInitial').textContent = nome ? nome[0].toUpperCase() : 'U';
+
+            if (currentUser.avatar_url) {
+                const display = document.getElementById('avatarDisplay');
+                const img = document.createElement('img');
+                img.src = currentUser.avatar_url;
+                img.alt = nome;
+                display.appendChild(img);
+            }
+        } catch(e) { console.error('Erro ao carregar perfil:', e); }
+    }
+
+    // ── Save profile ───────────────────────────────────────────────────
+    document.getElementById('saveProfileBtn').addEventListener('click', async () => {
+        const btn  = document.getElementById('saveProfileBtn');
+        const nome = nomeInput.value.trim();
+        const bio  = bioInput.value.trim();
+
+        if (!nome) { showToast('O nome de usuário é obrigatório.', 'error'); return; }
+
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Salvando...';
+
+        try {
+            const formData = new FormData();
+            formData.append('nome', nome);
+            formData.append('bio',  bio);
+            if (selectedFile) formData.append('avatar', selectedFile);
+
+            const res = await fetch('/api/update-profile', {
+                method:'POST',
+                body:formData
+            });
+
+            if (res.ok) {
+                showToast('Perfil atualizado com sucesso!');
+                document.getElementById('previewHint').classList.remove('show');
+                selectedFile = null;
+            } else {
+                const data = await res.json().catch(() => ({}));
+                showToast(data.error || 'Erro ao salvar perfil.', 'error');
+            }
+        } catch(e) {
+            showToast('Erro de conexão.', 'error');
+        } finally {
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fas fa-check"></i> Salvar Alterações';
+        }
+    });
+
+    // ── Init ───────────────────────────────────────────────────────────
+    window.addEventListener('load', loadProfile);
+</script>
+</body>
+</html>

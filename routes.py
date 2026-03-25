@@ -24,3 +24,8 @@ def preview2():
 def logout():
     session.clear()
     return redirect(url_for('login'))
+
+@app.route('/profile/<int:user_id>')
+@login_required
+def profile_page(user_id):
+    return render_template('profile.html', user_id=user_id)

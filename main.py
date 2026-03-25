@@ -17,6 +17,8 @@ def init_db():
         idusers INTEGER PRIMARY KEY AUTOINCREMENT,
         nome TEXT UNIQUE,
         password TEXT
+        bio TEXT DEFAULT '',
+        avatar_url TEXT DEFAULT ''
     )
     """)
 
