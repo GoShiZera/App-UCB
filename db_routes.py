@@ -5,6 +5,7 @@ from main import get_db_connection
 from models import login_required
 from werkzeug.security import generate_password_hash, check_password_hash
 from werkzeug.utils import secure_filename
+from psycopg2.extras import RealDictCursor
 import uuid
 
 UPLOAD_FOLDER = 'static/uploads'
@@ -15,11 +16,11 @@ os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 def get_me():
     user_id = session['user_id']
     conn = get_db_connection()
-    cursor = conn.cursor()
-    cursor.execute("SELECT idusers as id, nome, bio, avatar_url FROM users WHERE idusers = ?", (user_id,))
+    cursor = conn.cursor(cursor_factory=RealDictCursor)
+    cursor.execute("SELECT idusers as id, nome, bio, avatar_url FROM users WHERE idusers = %s", (user_id,))
     user = cursor.fetchone()
     cursor.close(); conn.close()
-    return jsonify(dict(user))
+    return jsonify(user)
 
 @app.route('/api/add-activity', methods=['POST'])
 @login_required
@@ -27,9 +28,9 @@ def add_activity():
     data = request.get_json()
     user_id = session['user_id']
     conn = get_db_connection()
-    cursor = conn.cursor()
+    cursor = conn.cursor(cursor_factory=RealDictCursor)
     cursor.execute(
-    "INSERT INTO activities (name, class, due_date, description, status, user_id) VALUES (?, ?, ?, ?, 'pending', ?)",
+    "INSERT INTO activities (name, class, due_date, description, status, user_id) VALUES (%s, %s, %s, %s, 'pending', %s)",
     (data['name'], data['class'], data['due_date'], data['description'], user_id)
     )
     conn.commit()
@@ -43,20 +44,20 @@ def get_activities():
     user_id = session['user_id']
     status = request.args.get('status', 'pending')
     conn = get_db_connection()
-    cursor = conn.cursor()  # For MySQL; use row_factory for SQLite
-    cursor.execute("SELECT * FROM activities WHERE status = ? AND user_id = ? ORDER BY due_date",(status, user_id,))
+    cursor = conn.cursor(cursor_factory=RealDictCursor) 
+    cursor.execute("SELECT * FROM activities WHERE status = %s AND user_id = %s ORDER BY due_date",(status, user_id,))
     activities = cursor.fetchall()
     cursor.close()
     conn.close()
-    return jsonify([dict(row) for row in activities])
+    return jsonify(activities)
 
 @app.route('/api/finish-activity/<int:task_id>', methods=['PUT'])
 @login_required
 def finish_activity(task_id):
     user_id = session['user_id']
     conn = get_db_connection()
-    cursor = conn.cursor()
-    cursor.execute("UPDATE activities SET status = 'completed' WHERE id = ? AND user_id = ?", (task_id, user_id,))
+    cursor = conn.cursor(cursor_factory=RealDictCursor)
+    cursor.execute("UPDATE activities SET status = 'completed' WHERE id = %s AND user_id = %s", (task_id, user_id,))
     conn.commit()
     cursor.close()
     conn.close()
@@ -67,8 +68,8 @@ def finish_activity(task_id):
 def delete_activity(task_id):
     user_id = session['user_id']
     conn = get_db_connection()
-    cursor = conn.cursor()
-    cursor.execute("DELETE FROM activities WHERE id = ? AND user_id = ?", (task_id, user_id,))
+    cursor = conn.cursor(cursor_factory=RealDictCursor)
+    cursor.execute("DELETE FROM activities WHERE id = %s AND user_id = %s", (task_id, user_id,))
     conn.commit()
     cursor.close()
     conn.close()
@@ -82,8 +83,8 @@ def update_activity(task_id):
     if not data:
         return jsonify({'error': 'Invalid data'}), 400
     conn = get_db_connection()
-    cursor = conn.cursor()
-    cursor.execute("UPDATE activities SET name = ?, class = ?, due_date = ?, description = ? WHERE id = ? AND user_id = ?", 
+    cursor = conn.cursor(cursor_factory=RealDictCursor)
+    cursor.execute("UPDATE activities SET name = %s, class = %s, due_date = %s, description = %s WHERE id = %s AND user_id = %s", 
     (data['name'], data['class'], data['due_date'], data['description'], task_id, user_id))
     conn.commit()
     if cursor.rowcount == 0:
@@ -107,19 +108,20 @@ def registrar():
         senha = request.form['passwordForm']
         senha_hash = generate_password_hash(senha)
         conn = get_db_connection()
-        cursor = conn.cursor()
-        cursor.execute("SELECT * FROM users WHERE nome = ?", (nome,))
+        cursor = conn.cursor(cursor_factory=RealDictCursor)
+        cursor.execute("SELECT * FROM users WHERE nome = %s", (nome,))
         if cursor.fetchone():
             cursor.close()
             conn.close()
             flash('Usuário já está em uso')
             return render_template('register.html')
         cursor.execute(
-            "INSERT INTO users (nome, password) VALUES (?, ?)",
+            "INSERT INTO users (nome, password) VALUES (%s, %s) RETURNING idusers",
             (nome, senha_hash)
         )
+        user_id = cursor.fetchone()[0]
         conn.commit()
-        session['user_id'] = cursor.lastrowid
+        session['user_id'] = user_id
         cursor.close()
         conn.close()
         return redirect(url_for('homepage'))
@@ -131,9 +133,9 @@ def login():
         nome = request.form['nomeForm']
         senha = request.form['passwordForm']
         conn = get_db_connection()
-        cursor = conn.cursor()
+        cursor = conn.cursor(cursor_factory=RealDictCursor)
         cursor.execute(
-            "SELECT * FROM users WHERE nome = ?",
+            "SELECT * FROM users WHERE nome = %s",
             (nome,)
         )
         user = cursor.fetchone()
@@ -150,8 +152,8 @@ def login():
 @login_required
 def get_profile(user_id):
     conn = get_db_connection()
-    cursor = conn.cursor()
-    cursor.execute("SELECT * FROM users WHERE idusers = ?", (user_id,))
+    cursor = conn.cursor(cursor_factory=RealDictCursor)
+    cursor.execute("SELECT * FROM users WHERE idusers = %s", (user_id,))
     user = cursor.fetchone()
     cursor.close()
     conn.close()
@@ -177,11 +179,11 @@ def update_profile():
         file.save(filepath)
         avatar_url = f'/static/uploads/{unique_name}'
     conn = get_db_connection()
-    cursor = conn.cursor()
+    cursor = conn.cursor(cursor_factory=RealDictCursor)
     if avatar_url:
-        cursor.execute("UPDATE users SET nome = ?, bio = ?, avatar_url = ? WHERE idusers = ?", (nome, bio, avatar_url, user_id))
+        cursor.execute("UPDATE users SET nome = %s, bio = %s, avatar_url = %s WHERE idusers = %s", (nome, bio, avatar_url, user_id))
     else:
-        cursor.execute("UPDATE users SET nome = ?, bio = ? WHERE idusers = ?", (nome, bio, user_id))
+        cursor.execute("UPDATE users SET nome = %s, bio = %s WHERE idusers = %s", (nome, bio, user_id))
     conn.commit()
     cursor.close()
     conn.close()

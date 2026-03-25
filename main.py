@@ -1,50 +1,41 @@
 from flask import Flask, request, jsonify
-import sqlite3
+import psycopg2
+import os
 
 from app import app
 
 def get_db_connection():
-    conn = sqlite3.connect('database.db')
-    conn.row_factory = sqlite3.Row
+    database_url = os.getenv("DATABASE_URL")
+    conn = psycopg2.connect(
+        database_url,
+        sslmode="require")
     return conn
 
 def init_db():
     conn = get_db_connection()
     cursor = conn.cursor()
-
     cursor.execute("""
     CREATE TABLE IF NOT EXISTS users (
-        idusers INTEGER PRIMARY KEY AUTOINCREMENT,
+        idusers SERIAL PRIMARY KEY,
         nome TEXT UNIQUE,
-        password TEXT
-        bio TEXT DEFAULT '',
-        avatar_url TEXT DEFAULT ''
+        password TEXT,
+        bio TEXT,
+        avatar_url TEXT
     )
     """)
-
-    try:
-        cursor.execute("ALTER TABLE users ADD COLUMN bio TEXT DEFAULT ''")
-    except:
-        pass
-
-    try:
-        cursor.execute("ALTER TABLE users ADD COLUMN avatar_url TEXT DEFAULT ''")
-    except:
-        pass
-
     cursor.execute("""
     CREATE TABLE IF NOT EXISTS activities (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        id SERIAL PRIMARY KEY,
         name TEXT,
         class TEXT,
         due_date TEXT,
         description TEXT,
         status TEXT,
-        user_id INTEGER
+        user_id INTEGER REFERENCES users(idusers)
     )
     """)
-
     conn.commit()
+    cursor.close()
     conn.close()
 init_db()
 
