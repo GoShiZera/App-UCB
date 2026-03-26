@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Tracker UCB</title>
+    <link rel="icon" href="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSspAf4JXbB2lyseqqOaAeFEo4O9BJNN2c-cA&s" type="image/png">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
     <style>
@@ -672,13 +673,13 @@
             const res  = await fetch('/api/me');
             if (!res.ok) return;
             const user = await res.json();
-            document.getElementById('sidebarUsername').textContent = user.nome || 'Usuário';
-            const initial = (user.nome || 'U')[0].toUpperCase();
+            document.getElementById('sidebarUsername').textContent = user.username || 'Usuário';
+            const initial = (user.username || 'U')[0].toUpperCase();
             document.getElementById('sidebarAvatarInitial').textContent = initial;
             if (user.avatar_url) {
                 const img = document.createElement('img');
                 img.src = user.avatar_url;
-                img.alt = user.nome;
+                img.alt = user.username;
                 document.getElementById('sidebarAvatar').appendChild(img);
             }
             // Update profile link with real user_id

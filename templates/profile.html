@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Tracker UCB — Perfil</title>
+    <link rel="icon" href="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSspAf4JXbB2lyseqqOaAeFEo4O9BJNN2c-cA&s" type="image/png">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
     <style>
@@ -351,7 +352,7 @@
             if (!res.ok) return;
             currentUser = await res.json();
 
-            const nome = currentUser.nome || '';
+            const nome = currentUser.username || '';
             const bio  = currentUser.bio  || '';
 
             nomeInput.value = nome;

@@ -18,6 +18,7 @@ def init_db():
     CREATE TABLE IF NOT EXISTS users (
         idusers SERIAL PRIMARY KEY,
         nome TEXT UNIQUE,
+        username TEXT,
         password TEXT,
         bio TEXT,
         avatar_url TEXT

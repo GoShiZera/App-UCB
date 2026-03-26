@@ -17,7 +17,7 @@ def get_me():
     user_id = session['user_id']
     conn = get_db_connection()
     cursor = conn.cursor(cursor_factory=RealDictCursor)
-    cursor.execute("SELECT idusers as id, nome, bio, avatar_url FROM users WHERE idusers = %s", (user_id,))
+    cursor.execute("SELECT idusers as id, bio, avatar_url, username FROM users WHERE idusers = %s", (user_id,))
     user = cursor.fetchone()
     cursor.close(); conn.close()
     return jsonify(user)
@@ -116,10 +116,11 @@ def registrar():
             flash('Usuário já está em uso')
             return render_template('register.html')
         cursor.execute(
-            "INSERT INTO users (nome, password) VALUES (%s, %s) RETURNING idusers",
-            (nome, senha_hash)
+            "INSERT INTO users (nome, username, password) VALUES (%s, %s, %s) RETURNING idusers",
+            (nome, nome, senha_hash)
         )
-        user_id = cursor.fetchone()[0]
+        user = cursor.fetchone()
+        user_id = user['idusers']
         conn.commit()
         session['user_id'] = user_id
         cursor.close()
@@ -165,7 +166,7 @@ def get_profile(user_id):
 @login_required
 def update_profile():
     user_id = session['user_id']
-    nome = request.form.get('nome')
+    username = request.form.get('nome')
     bio = request.form.get('bio')
     file = request.files.get('avatar')
     avatar_url = None
@@ -181,9 +182,9 @@ def update_profile():
     conn = get_db_connection()
     cursor = conn.cursor(cursor_factory=RealDictCursor)
     if avatar_url:
-        cursor.execute("UPDATE users SET nome = %s, bio = %s, avatar_url = %s WHERE idusers = %s", (nome, bio, avatar_url, user_id))
+        cursor.execute("UPDATE users SET username = %s, bio = %s, avatar_url = %s WHERE idusers = %s", (username, bio, avatar_url, user_id))
     else:
-        cursor.execute("UPDATE users SET nome = %s, bio = %s WHERE idusers = %s", (nome, bio, user_id))
+        cursor.execute("UPDATE users SET username = %s, bio = %s WHERE idusers = %s", (username, bio, user_id))
     conn.commit()
     cursor.close()
     conn.close()
